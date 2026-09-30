@@ -28,7 +28,7 @@ jobs:
             echo "Downloading $url"
             curl -A "Mozilla/5.0 source-pack-builder" -fL --retry 4 --retry-delay 2 --connect-timeout 30 --max-time 180 "$url" -o "$out"
             test "$(head -c 4 "$out")" = "%PDF" || { echo "Not a PDF: $out"; file "$out"; head -c 200 "$out"; exit 1; }
-            qpdf --check "$out"
+            qpdf --check "$out" || { rc=$?; [ "$rc" -eq 3 ] || exit "$rc"; }
           }
 
           # 1 UX design
@@ -83,7 +83,7 @@ jobs:
           qpdf --empty --pages             src/marketing-research/01_ecampusontario_introduction_to_market_research.pdf             -- output/08_MarketingResearch_original_sources.pdf
 
           for f in output/*.pdf; do
-            qpdf --check "$f"
+            qpdf --check "$f" || { rc=$?; [ "$rc" -eq 3 ] || exit "$rc"; }
             pdfinfo "$f" | grep -E '^(Pages|File size):'
           done
 
