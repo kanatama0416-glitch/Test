@@ -1,0 +1,96 @@
+name: build-sourcepacks
+
+on:
+  push:
+    paths:
+      - ".github/workflows/build-sourcepacks.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Install PDF tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y qpdf curl
+
+      - name: Download original source PDFs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p src/ux src/hypothesis src/user-research src/sns src/community src/design-thinking src/ga4 src/marketing-research output
+
+          download_pdf() {
+            url="$1"
+            out="$2"
+            echo "Downloading $url"
+            curl -A "Mozilla/5.0 source-pack-builder" -fL --retry 4 --retry-delay 2 --connect-timeout 30 --max-time 180 "$url" -o "$out"
+            test "$(head -c 4 "$out")" = "%PDF" || { echo "Not a PDF: $out"; file "$out"; head -c 200 "$out"; exit 1; }
+            qpdf --check "$out"
+          }
+
+          # 1 UX design
+          download_pdf "https://dschool.sfo3.digitaloceanspaces.com/documents/dschool_bootleg_deck_2018_final_sm2-6.pdf" "src/ux/01_stanford_design_thinking_bootleg.pdf"
+          download_pdf "https://www.nist.gov/system/files/documents/2017/04/28/Guide_Final_Publication_Version.pdf" "src/ux/02_nistir_7741_ucd_usability.pdf"
+          download_pdf "https://nvlpubs.nist.gov/nistpubs/ir/2012/NIST.IR.7804.pdf" "src/ux/03_nistir_7804_usability_evaluation_testing.pdf"
+
+          # 2 Hypothesis thinking
+          download_pdf "https://dspace.mit.edu/bitstreams/21e81cef-879b-4bb0-91f2-14bd00cc9064/download" "src/hypothesis/01_mit_cisr_learn_from_hypotheses.pdf"
+          download_pdf "https://www.ocw.mit.edu/courses/15-390-new-enterprises-spring-2013/85d18c5f1ce4ade7415c75be670dd0c0_MIT15_390S13_lec19.pdf" "src/hypothesis/02_mit_ocw_product_development.pdf"
+
+          # 3 User research
+          download_pdf "https://www2.census.gov/adrm/CBSM/rsm2007-42.pdf" "src/user-research/01_us_census_questionnaire_guidelines.pdf"
+          download_pdf "https://stacks.cdc.gov/view/cdc/11674/cdc_11674_DS1.pdf" "src/user-research/02_cdc_questionnaire_design.pdf"
+
+          # 4 SNS marketing
+          download_pdf "https://open.library.okstate.edu/introtosocialmedia/open/download?type=print_pdf" "src/sns/01_okstate_intro_to_social_media.pdf"
+
+          # 5 Community management
+          download_pdf "https://raw.githubusercontent.com/communitycanvas/documents/master/CommunityCanvas-Guidebook.pdf" "src/community/01_community_canvas_guidebook.pdf"
+          download_pdf "https://raw.githubusercontent.com/communitycanvas/documents/master/CommunityCanvas-Summary.pdf" "src/community/02_community_canvas_summary.pdf"
+          download_pdf "https://raw.githubusercontent.com/communitycanvas/documents/master/CommunityCanvas-MinimumViableCommunity.pdf" "src/community/03_community_canvas_minimum_viable_community.pdf"
+          download_pdf "https://raw.githubusercontent.com/communitycanvas/documents/master/CommunityCanvas-Worksheet-Doc.pdf" "src/community/04_community_canvas_worksheet.pdf"
+
+          # 6 Design thinking
+          cp "src/ux/01_stanford_design_thinking_bootleg.pdf" "src/design-thinking/01_stanford_design_thinking_bootleg.pdf"
+
+          # 7 GA4
+          download_pdf "https://diposit.ub.edu/bitstreams/39c47acf-6aaf-4131-9b12-87e2fd67fd98/download" "src/ga4/01_university_barcelona_ga4.pdf"
+
+          # 8 Marketing research
+          download_pdf "https://openlibrary-repo.ecampusontario.ca/xmlui/bitstream/handle/123456789/2084/Introduction-to-Market-Research-1710771881.pdf?isAllowed=y&sequence=5" "src/marketing-research/01_ecampusontario_introduction_to_market_research.pdf"
+
+      - name: Concatenate originals by genre
+        shell: bash
+        run: |
+          set -euo pipefail
+          qpdf --empty --pages             src/ux/01_stanford_design_thinking_bootleg.pdf             src/ux/02_nistir_7741_ucd_usability.pdf             src/ux/03_nistir_7804_usability_evaluation_testing.pdf             -- output/01_UX_original_sources.pdf
+
+          qpdf --empty --pages             src/hypothesis/01_mit_cisr_learn_from_hypotheses.pdf             src/hypothesis/02_mit_ocw_product_development.pdf             -- output/02_Hypothesis_original_sources.pdf
+
+          qpdf --empty --pages             src/user-research/01_us_census_questionnaire_guidelines.pdf             src/user-research/02_cdc_questionnaire_design.pdf             -- output/03_UserResearch_original_sources.pdf
+
+          qpdf --empty --pages             src/sns/01_okstate_intro_to_social_media.pdf             -- output/04_SNSMarketing_original_sources.pdf
+
+          qpdf --empty --pages             src/community/01_community_canvas_guidebook.pdf             src/community/02_community_canvas_summary.pdf             src/community/03_community_canvas_minimum_viable_community.pdf             src/community/04_community_canvas_worksheet.pdf             -- output/05_CommunityManagement_original_sources.pdf
+
+          qpdf --empty --pages             src/design-thinking/01_stanford_design_thinking_bootleg.pdf             -- output/06_DesignThinking_original_sources.pdf
+
+          qpdf --empty --pages             src/ga4/01_university_barcelona_ga4.pdf             -- output/07_GA4_original_sources.pdf
+
+          qpdf --empty --pages             src/marketing-research/01_ecampusontario_introduction_to_market_research.pdf             -- output/08_MarketingResearch_original_sources.pdf
+
+          for f in output/*.pdf; do
+            qpdf --check "$f"
+            pdfinfo "$f" | grep -E '^(Pages|File size):'
+          done
+
+      - name: Upload source packs
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-source-packs
+          path: output/*.pdf
+          retention-days: 1
+          if-no-files-found: error
