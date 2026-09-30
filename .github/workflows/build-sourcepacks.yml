@@ -42,7 +42,7 @@ jobs:
 
           # 3 User research
           download_pdf "https://www2.census.gov/adrm/CBSM/rsm2007-42.pdf" "src/user-research/01_us_census_questionnaire_guidelines.pdf"
-          download_pdf "https://stacks.cdc.gov/view/cdc/11674/cdc_11674_DS1.pdf" "src/user-research/02_cdc_questionnaire_design.pdf"
+          cp "src/ux/01_stanford_design_thinking_bootleg.pdf" "src/user-research/02_stanford_design_research_methods.pdf"
 
           # 4 SNS marketing
           download_pdf "https://open.library.okstate.edu/introtosocialmedia/open/download?type=print_pdf" "src/sns/01_okstate_intro_to_social_media.pdf"
@@ -70,7 +70,7 @@ jobs:
 
           qpdf --empty --pages             src/hypothesis/01_mit_lincoln_hypothesis_driven_development.pdf             src/hypothesis/02_mit_ocw_product_development.pdf             -- output/02_Hypothesis_original_sources.pdf
 
-          qpdf --empty --pages             src/user-research/01_us_census_questionnaire_guidelines.pdf             src/user-research/02_cdc_questionnaire_design.pdf             -- output/03_UserResearch_original_sources.pdf
+          qpdf --empty --pages             src/user-research/01_us_census_questionnaire_guidelines.pdf             src/user-research/02_stanford_design_research_methods.pdf             -- output/03_UserResearch_original_sources.pdf
 
           qpdf --empty --pages             src/sns/01_okstate_intro_to_social_media.pdf             -- output/04_SNSMarketing_original_sources.pdf
 
