@@ -37,7 +37,7 @@ jobs:
           download_pdf "https://nvlpubs.nist.gov/nistpubs/ir/2012/NIST.IR.7804.pdf" "src/ux/03_nistir_7804_usability_evaluation_testing.pdf"
 
           # 2 Hypothesis thinking
-          download_pdf "https://dspace.mit.edu/bitstreams/21e81cef-879b-4bb0-91f2-14bd00cc9064/download" "src/hypothesis/01_mit_cisr_learn_from_hypotheses.pdf"
+          download_pdf "https://www.ll.mit.edu/sites/default/files/project/doc/2020-07/Hypothesis-Driven%20Development_v4.pdf" "src/hypothesis/01_mit_lincoln_hypothesis_driven_development.pdf"
           download_pdf "https://www.ocw.mit.edu/courses/15-390-new-enterprises-spring-2013/85d18c5f1ce4ade7415c75be670dd0c0_MIT15_390S13_lec19.pdf" "src/hypothesis/02_mit_ocw_product_development.pdf"
 
           # 3 User research
@@ -68,7 +68,7 @@ jobs:
           set -euo pipefail
           qpdf --empty --pages             src/ux/01_stanford_design_thinking_bootleg.pdf             src/ux/02_nistir_7741_ucd_usability.pdf             src/ux/03_nistir_7804_usability_evaluation_testing.pdf             -- output/01_UX_original_sources.pdf
 
-          qpdf --empty --pages             src/hypothesis/01_mit_cisr_learn_from_hypotheses.pdf             src/hypothesis/02_mit_ocw_product_development.pdf             -- output/02_Hypothesis_original_sources.pdf
+          qpdf --empty --pages             src/hypothesis/01_mit_lincoln_hypothesis_driven_development.pdf             src/hypothesis/02_mit_ocw_product_development.pdf             -- output/02_Hypothesis_original_sources.pdf
 
           qpdf --empty --pages             src/user-research/01_us_census_questionnaire_guidelines.pdf             src/user-research/02_cdc_questionnaire_design.pdf             -- output/03_UserResearch_original_sources.pdf
 
